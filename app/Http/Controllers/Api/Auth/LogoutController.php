@@ -23,6 +23,10 @@ class LogoutController extends Controller
         // Régénération du token CSRF
         $request->session()->regenerateToken();
 
-        return response()->json(['message' => __('Logged out successfully.')]);
+        // Supprimer le cookie de session
+        $response = response()->json(['message' => __('Logged out successfully.')]);
+        $response->withCookie(cookie()->forget(config('session.cookie')));
+
+        return $response;
     }
 }
