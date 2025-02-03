@@ -14,14 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->statefulApi();
-
+        $middleware->api();
         $middleware->redirectUsersTo(function (Request $request) {
-            if ($request->expectsJson()) {
-                throw new AlreadyAuthenticatedException();
-            }
-
-            return '/';
+//            if ($request->expectsJson()) {
+//                throw new AlreadyAuthenticatedException();
+//            }
+//            return '/';
         });
     })
     ->withExceptions(function (Exceptions $exceptions) {

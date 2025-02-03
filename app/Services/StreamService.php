@@ -5,12 +5,15 @@ namespace App\Services;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+// Ancienne version du service de streaming
+// Ce service n'est plus utilisé car le streaming se fait maintenant via HLS
 class StreamService
 {
     public function stream(string $filePath): StreamedResponse
     {
-        // Libère le verrou de session immédiatement
-        session()->save();
+        if (session()->isStarted()) {
+            session_write_close();
+        }
 
         if (!file_exists($filePath)) {
             Log::error('Fichier vidéo introuvable.', ['path' => $filePath]);

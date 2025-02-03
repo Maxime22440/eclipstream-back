@@ -7,19 +7,21 @@ use App\Http\Controllers\Api\Content\ContentController;
 use App\Http\Controllers\Api\Content\ContentRequestController;
 use App\Http\Controllers\Api\Episode\EpisodeController;
 use App\Http\Controllers\Api\Genre\GenreController;
-use App\Http\Controllers\Api\Streaming\StreamingController;
+use App\Http\Controllers\Api\Streaming\HLSStreamingController;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/content/request', [ContentRequestController::class, 'store']);
+// Routes d'authentification API
+Route::prefix('auth')->group(function () {
+    Route::post('login', [LoginController::class, 'login'])
+        ->middleware(['guest:api'])->name('login');
 
-Route::prefix('auth')->group(function (){
-    Route::post('login', LoginController::class)
-        ->middleware(['guest', 'web']);
-    Route::post('/register', RegisterController::class)
-        ->middleware(['guest', 'web']);
-    Route::post('logout', LogoutController::class)->middleware(['auth:sanctum', 'web']);
+    Route::post('register', [RegisterController::class, 'register'])
+        ->middleware(['guest:api']);
+
+    Route::post('logout', [LogoutController::class, 'logout'])
+        ->middleware(['auth:sanctum']);
 });
 
 // Routes protégées par auth:sanctum
@@ -45,14 +47,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware(SuperAdminMiddleware::class)->post('/', [EpisodeController::class, 'addEpisode']);
     });
 
+    // Générer une URL signée pour un film HLS
+    Route::get('/signed-stream/hls/playlist/movies/{movieUuid}', [HLSStreamingController::class, 'streamSignedPlaylistForMovie'])
+        ->name('signed.stream.hls.playlist.movie');
+
+    Route::get('/signed-stream/hls/playlist/episodes/{episodeUuid}', [HLSStreamingController::class, 'streamSignedPlaylistForEpisode'])
+        ->name('signed.stream.hls.playlist.episode');
+
+    // Routes de streaming HLS protégées par le middleware 'signed'
+    Route::get('/stream/hls/movies/{movieUuid}/{filename}', [HLSStreamingController::class, 'streamMovieHLS'])
+        ->name('stream.hls.movie')
+        ->middleware('signed');
+
+    Route::get('/stream/hls/series/{seriesUuid}/{season}/{episodeUuid}/{filename}', [HLSStreamingController::class, 'streamEpisodeHLS'])
+        ->name('stream.hls.episode')
+        ->middleware('signed');
+
 });
-
+Route::post('/content/request', [ContentRequestController::class, 'store']);
 Route::get('/contents/{uuid}', [ContentController::class, 'getContentByUuid']);
-
-Route::get('/stream/{uuid}', [StreamingController::class, 'streamMovie'])
-    ->name('movie.stream')
-    ->middleware('auth:sanctum');
-
-Route::get('/stream/episodes/{uuid}', [StreamingController::class, 'streamEpisode'])
-    ->name('episode.stream')
-    ->middleware('auth:sanctum');

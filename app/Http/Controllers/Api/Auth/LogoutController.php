@@ -12,21 +12,11 @@ class LogoutController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        // Déconnexion de l'utilisateur
-        Auth::guard('web')->logout();
+        // Supprime le token actuel
+        $request->user()->currentAccessToken()->delete();
 
-        // Invalidation de la session
-        $request->session()->invalidate();
-
-        // Régénération du token CSRF
-        $request->session()->regenerateToken();
-
-        // Supprimer le cookie de session
-        $response = response()->json(['message' => __('Logged out successfully.')]);
-        $response->withCookie(cookie()->forget(config('session.cookie')));
-
-        return $response;
+        return response()->json(['message' => 'Déconnexion réussie.'], 200);
     }
 }
