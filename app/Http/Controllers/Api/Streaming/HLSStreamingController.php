@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Streaming;
 
 use App\Http\Controllers\Controller;
 use App\Models\Episode;
+use App\Repositories\Interfaces\ContentRepositoryInterface;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +18,12 @@ class HLSStreamingController extends Controller
 {
     // Durée d'expiration des URLs signées en minutes (ici 190 minutes)
     private const SIGNED_URL_EXPIRATION = 190;
+    protected ContentRepositoryInterface $contentRepository;
+
+    public function __construct(ContentRepositoryInterface $contentRepository)
+    {
+        $this->contentRepository = $contentRepository;
+    }
 
     /**
      * Vérifie que l'utilisateur authentifié correspond au user_id fourni dans l'URL.
@@ -115,6 +122,8 @@ class HLSStreamingController extends Controller
             abort(404, 'Playlist HLS du film non trouvée.');
         }
 
+        $this->contentRepository->incrementViews($movieUuid);
+
         $playlistContent = $disk->get($filePath);
         $lines = preg_split('/\r\n|\r|\n/', $playlistContent);
         $userId = $request->user()->id;
@@ -202,6 +211,8 @@ class HLSStreamingController extends Controller
         if (!$disk->exists($filePath)) {
             abort(404, 'Playlist HLS non trouvée.');
         }
+
+        $this->contentRepository->incrementViews($episodeData->season->content->uuid);
 
         $playlistContent = $disk->get($filePath);
         $lines = preg_split('/\r\n|\r|\n/', $playlistContent);

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Content\ContentRequestController;
 use App\Http\Controllers\Api\Episode\EpisodeController;
 use App\Http\Controllers\Api\Genre\GenreController;
 use App\Http\Controllers\Api\Streaming\HLSStreamingController;
+use App\Http\Controllers\Api\Upload\UploadController;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/all-series', [ContentController::class, 'getAllSeries']);
         Route::get('/{seriesId}/seasons', [ContentController::class, 'getSeasons']);
         Route::middleware(SuperAdminMiddleware::class)->post('/{seriesId}/seasons', [ContentController::class, 'addSeasonToSeries']);
+        Route::get('/not-uploaded', [ContentController::class, 'getNotUploadedContent']);
     });
 
     // Gestion des Épisodes
@@ -46,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [EpisodeController::class, 'getEpisodes']);
         Route::middleware(SuperAdminMiddleware::class)->post('/', [EpisodeController::class, 'addEpisode']);
     });
+
+    Route::get('/episodes/not-uploaded', [EpisodeController::class, 'getNotUploadedEpisodes']);
 
     // Générer une URL signée pour un film HLS
     Route::get('/signed-stream/hls/playlist/movies/{movieUuid}', [HLSStreamingController::class, 'streamSignedPlaylistForMovie'])
@@ -63,6 +67,27 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('stream.hls.episode')
         ->middleware('signed');
 
+    // Routes d'upload protégées par le middleware SuperAdmin
+    Route::middleware(SuperAdminMiddleware::class)->group(function () {
+        Route::post('/upload/video/content', [UploadController::class, 'uploadContent']);
+        Route::post('/upload/video/episode', [UploadController::class, 'uploadEpisode']);
+    });
+
 });
 Route::post('/content/request', [ContentRequestController::class, 'store']);
+
+// Route publique pour récupérer un film au hasard
+// La route est déclarée AVANT la route '/contents/{uuid}' pour éviter toute ambiguïté avec le paramètre {uuid}
+Route::get('/contents/random-movie', [ContentController::class, 'getRandomMovie']);
+
+// Route publique pour récupérer tous les films par ordre d'ajout (du plus récent au plus ancien)
+Route::get('/contents/movies/all', [ContentController::class, 'getAllMovies']);
+
+// Route publique pour récupérer les 10 derniers films ajoutés
+Route::get('/contents/movies/latest', [ContentController::class, 'getLatestMovies']);
+
+// Route publique pour récupérer les 10 films les plus regardés
+Route::get('/contents/movies/top-viewed', [ContentController::class, 'getTopViewedMovies']);
+
+// Route publique pour récupérer le contenu par UUID
 Route::get('/contents/{uuid}', [ContentController::class, 'getContentByUuid']);

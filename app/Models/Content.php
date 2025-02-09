@@ -15,8 +15,8 @@ class Content extends Model
 
     protected $fillable = [
         'title', 'description', 'release_date', 'imdb_rating', 'duration',
-        'type', 'saga_id', 'country', 'poster_path', 'thumbnail_path', 'video_link',
-        'stream_link', 'is_uploaded',
+        'type', 'total_views', 'saga_id', 'country', 'poster_path', 'thumbnail_path',
+        'video_link', 'stream_link', 'is_uploaded',
     ];
 
     /**

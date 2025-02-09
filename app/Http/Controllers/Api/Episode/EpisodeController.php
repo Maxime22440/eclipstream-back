@@ -65,4 +65,23 @@ class EpisodeController extends Controller
         }
     }
 
+    /**
+     * Récupérer tous les épisodes non uploadés (is_uploaded = 0)
+     */
+    public function getNotUploadedEpisodes(): JsonResponse
+    {
+        try {
+            $episodes = $this->episodeRepository->getNotUploadedEpisodes();
+            return response()->json(['episodes' => $episodes], 200);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération des épisodes non uploadés.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des épisodes non uploadés',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

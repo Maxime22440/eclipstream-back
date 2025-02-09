@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 class GenreRepository implements GenreRepositoryInterface
 {
+    /**
+     * Récupère tous les genres disponibles.
+     *
+     * @return Collection Collection d'instances de Genre.
+     */
     public function getAllGenres(): Collection
     {
         return Genre::all();

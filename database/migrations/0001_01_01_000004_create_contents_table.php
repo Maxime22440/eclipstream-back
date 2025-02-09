@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('imdb_rating', 3, 1);
             $table->integer('duration');
             $table->enum('type', ['movie', 'series', 'anime-movie', 'anime-series']);
+            $table->unsignedBigInteger('total_views')->default(0);
             $table->string('country', 100);
             $table->foreignId('saga_id')->nullable()->constrained('sagas')->onDelete('set null');
             $table->string('poster_path')->nullable();

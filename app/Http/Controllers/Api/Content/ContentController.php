@@ -116,4 +116,114 @@ class ContentController extends Controller
         }
     }
 
+    /**
+     * Récupère les contenus non uploadés (is_uploaded = 0)
+     *
+     * @return JsonResponse
+     */
+    public function getNotUploadedContent(): JsonResponse
+    {
+        try {
+            $contents = $this->contentRepository->getNotUploadedContent();
+            return response()->json(['contents' => $contents], 200);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération des contenus non uploadés.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des contenus non uploadés',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Récupère un film au hasard.
+     *
+     * @return JsonResponse
+     */
+    public function getRandomMovie(): JsonResponse
+    {
+        try {
+            $movie = $this->contentRepository->getRandomMovie();
+
+            if (!$movie) {
+                return response()->json(['error' => 'Aucun film trouvé'], 404);
+            }
+
+            return response()->json(['movie' => $movie], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération d\'un film aléatoire.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error'   => 'Une erreur est survenue lors de la récupération d\'un film aléatoire',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAllMovies(): JsonResponse
+    {
+        try {
+            $movies = $this->contentRepository->getAllMoviesOrderedByCreation();
+            return response()->json(['movies' => $movies], 200);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération de tous les films.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération de tous les films',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getLatestMovies(): JsonResponse
+    {
+        try {
+            $movies = $this->contentRepository->getLatestMovies(10);
+            return response()->json(['movies' => $movies], 200);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération des derniers films.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des derniers films',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Récupère les 10 films les plus regardés.
+     *
+     * @return JsonResponse
+     */
+    public function getTopViewedMovies(): JsonResponse
+    {
+        try {
+            $movies = $this->contentRepository->getTopMovies(10);
+            return response()->json(['movies' => $movies], 200);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la récupération des films les plus regardés.', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des films les plus regardés',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
